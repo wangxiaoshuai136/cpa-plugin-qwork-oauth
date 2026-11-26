@@ -160,7 +160,7 @@ func (p *Plugin) handleRegister(raw []byte) (any, error) {
 			Version:          Version,
 			Author:           "王小帅",
 			GitHubRepository: "https://github.com/wangxiaoshuai136/cpa-plugin-qwork-oauth",
-			Logo:             "https://raw.githubusercontent.com/wangxiaoshuai136/cpa-plugin-qwenwork/main/assets/icon.png",
+			Logo:             "https://raw.githubusercontent.com/wangxiaoshuai136/cpa-plugin-qwork-oauth/main/assets/icon.png",
 			ConfigFields: []pluginapi.ConfigField{
 				{Name: "auth_dir", Type: pluginapi.ConfigFieldTypeString, Default: DefaultAuthDir(), Description: "千问办公客户端登录态目录（含 auth-v2.dat 与 Local State）"},
 				{Name: "model_prefix", Type: pluginapi.ConfigFieldTypeString, Default: "", Description: "模型名前缀，例如 qwenwork"},
@@ -184,6 +184,7 @@ func (p *Plugin) handleModelStatic(raw []byte) (any, error) {
 	prefix := strings.Trim(strings.TrimSpace(p.Config().ModelPrefix), "/")
 	return pluginapi.ModelResponse{Provider: ProviderID, Models: StaticModels(prefix)}, nil
 }
+
 
 
 
