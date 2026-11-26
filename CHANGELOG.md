@@ -1,3 +1,10 @@
+## 0.1.1 - 2026-11-27
+
+### 修复
+
+- 账号授权不再自行拉起浏览器，统一由 CPA 按其浏览器设置打开（默认浏览器 / 指定浏览器 / 不自动打开）
+- 插件显示名改为 `QWork OAuth`，OAuth 条目名为 `QWork`，OAuth 页不再出现 `QWork OAuth OAuth`
+- 版本号升到 0.1.1，确保内核重新注册元数据
 # Changelog
 
 ## 0.1.0 - 2026-11-27
@@ -18,3 +25,4 @@
 - 流式返回改为 `host.stream.emit`，修复 `unsupported type: <-chan` 500
 - 凭证强制 `.json` 文件名，修复重复卡片与删除 404
 - 上游固定 `Accept-Encoding: identity`，修复 gzip 头错配导致的 `terminated`
+
