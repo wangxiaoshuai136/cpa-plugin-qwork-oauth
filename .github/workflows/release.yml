@@ -1,0 +1,72 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g. v0.1.0)"
+        required: true
+        default: "v0.1.0"
+
+permissions:
+  contents: write
+
+env:
+  PLUGIN_ID: qwenwork
+
+jobs:
+  build:
+    name: Build (windows/amd64)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          check-latest: true
+      - name: Install Toolchain
+        run: sudo apt-get update && sudo apt-get install -y gcc-mingw-w64-x86-64 zip
+      - name: Determine Version
+        id: ver
+        shell: bash
+        run: |
+          RAW_TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          echo "tag=${RAW_TAG}" >> "$GITHUB_OUTPUT"
+          echo "version=${RAW_TAG#v}" >> "$GITHUB_OUTPUT"
+      - name: Test
+        run: go test ./...
+      - name: Build & Package
+        shell: bash
+        run: |
+          mkdir -p out
+          LIB_NAME="${PLUGIN_ID}.dll"
+          ZIP_NAME="${PLUGIN_ID}_${{ steps.ver.outputs.version }}_windows_amd64.zip"
+          CGO_ENABLED=1 GOOS=windows GOARCH=amd64 CC=x86_64-w64-mingw32-gcc \
+            go build -buildmode=c-shared -trimpath -ldflags="-s -w" -o "out/${LIB_NAME}" ./cmd/qwenwork-plugin
+          (cd out && zip -j "../${ZIP_NAME}" "${LIB_NAME}")
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: plugin-windows-amd64
+          path: "${PLUGIN_ID}_*_windows_amd64.zip"
+
+  release:
+    name: Publish GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - name: Checksums & Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd artifacts
+          sha256sum *.zip > checksums.txt
+          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          gh release create "$TAG" *.zip checksums.txt --title "$TAG - QwenWork Plugin" --notes "QwenWork (千问办公) native CLIProxyAPI plugin release." -R "${{ github.repository }}"
