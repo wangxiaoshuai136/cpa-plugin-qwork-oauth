@@ -38,9 +38,10 @@ type rpcCapabilities struct {
 }
 
 type rpcIdentifierResponse struct {
-	Identifier          string   `json:"identifier"`
-	Identifiers         []string `json:"identifiers,omitempty"`
-	CredentialProviders []string `json:"credential_providers,omitempty"`
+	Identifier          string                        `json:"identifier"`
+	Identifiers         []string                      `json:"identifiers,omitempty"`
+	CredentialProviders []string                      `json:"credential_providers,omitempty"`
+	Entries             []pluginapi.AuthProviderEntry `json:"entries,omitempty"`
 }
 
 type Plugin struct {
@@ -106,7 +107,7 @@ func (p *Plugin) HandleMethod(method string, raw []byte) (any, error) {
 		p.cancel()
 		return map[string]any{"shutdown": true}, nil
 	case pluginabi.MethodAuthIdentifier:
-		return rpcIdentifierResponse{Identifier: ProviderID, Identifiers: []string{ProviderID}, CredentialProviders: []string{ProviderID}}, nil
+		return rpcIdentifierResponse{Identifier: ProviderID, Identifiers: []string{ProviderID}, CredentialProviders: []string{ProviderID}, Entries: []pluginapi.AuthProviderEntry{{Identifier: ProviderID, Name: "QWork"}}}, nil
 	case pluginabi.MethodAuthParse:
 		return p.handleAuthParse(raw)
 	case pluginabi.MethodAuthRefresh:
@@ -184,6 +185,7 @@ func (p *Plugin) handleModelStatic(raw []byte) (any, error) {
 	prefix := strings.Trim(strings.TrimSpace(p.Config().ModelPrefix), "/")
 	return pluginapi.ModelResponse{Provider: ProviderID, Models: StaticModels(prefix)}, nil
 }
+
 
 
 
