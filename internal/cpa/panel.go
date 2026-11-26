@@ -54,7 +54,6 @@ func (p *Plugin) handleManagementRegister(raw []byte) (any, error) {
 		Resources: []pluginapi.ResourceRoute{
 			{Path: "/panel", Menu: "千问办公", Description: "千问办公账号、额度与模型面板"},
 			{Path: "/icon.png", Description: "千问办公图标"},
-			{Path: "/login", Description: "千问办公登录中转页"},
 		},
 	}, nil
 }
@@ -67,11 +66,6 @@ func (p *Plugin) handleManagementHandle(raw []byte) (any, error) {
 	path := strings.ToLower(req.Path)
 	if i := strings.IndexByte(path, '?'); i >= 0 {
 		path = path[:i]
-	}
-	if strings.HasSuffix(path, "/login") {
-		h := http.Header{}
-		h.Set("Content-Type", "text/html; charset=utf-8")
-		return pluginapi.ManagementResponse{StatusCode: http.StatusOK, Headers: h, Body: []byte("<!doctype html><meta charset=utf-8><title>QWork 登录</title><body style=\"font:14px sans-serif;padding:32px\">浏览器已在新窗口打开登录页。<br>若未打开，请回到 CPA 重新点击“账号授权”。</body>")}, nil
 	}
 	if strings.HasSuffix(path, "/icon.png") {
 		h := http.Header{}
@@ -172,5 +166,6 @@ code{background:#0b1018;border:1px solid #1e283b;border-radius:6px;padding:1px 6
 <div class="card"><div class="label">钱包</div><table><thead><tr><th>余额</th><th>到期</th></tr></thead><tbody>{{wallets}}</tbody></table></div>
 <div class="card"><div class="label">模型（{{modelCount}}）</div><table><thead><tr><th>模型</th><th>ID</th><th>输入</th><th>上下文</th></tr></thead><tbody>{{models}}</tbody></table></div>
 </div></body></html>`
+
 
 

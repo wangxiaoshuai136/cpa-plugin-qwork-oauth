@@ -82,23 +82,9 @@ func (p *Plugin) handleAuthLoginStart(raw []byte) (any, error) {
 	q.Set("redirect_uri", oauthRedirect)
 
 	deviceURL := defaultOrigin + "/device/selectAccounts?" + q.Encode()
-	var extra struct {
-		Browser string `json:"browser"`
-	}
-	if len(raw) > 0 {
-		_ = json.Unmarshal(raw, &extra)
-	}
-	pref := strings.ToLower(strings.TrimSpace(extra.Browser))
-	if pref == "" {
-		pref = "default"
-	}
-	openURL := deviceURL
-	if pref != "none" && openIsolatedBrowser(pref, deviceURL) {
-		openURL = strings.TrimRight(p.Config().PublicBaseURL, "/") + "/v0/resource/plugins/qwenwork/login"
-	}
 	return pluginapi.AuthLoginStartResponse{
 		Provider:  ProviderID,
-		URL:       openURL,
+		URL:       deviceURL,
 		State:     nonce,
 		ExpiresAt: time.Now().Add(deviceFlowTTL),
 		Metadata:  map[string]any{"machine_id": machineID},
@@ -383,6 +369,7 @@ func firstNonEmpty(vals ...string) string {
 	}
 	return ""
 }
+
 
 
 
