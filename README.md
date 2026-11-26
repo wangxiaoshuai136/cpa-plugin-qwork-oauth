@@ -1,40 +1,55 @@
-# QWork OAuth (cpa-plugin-qwork-oauth)
+<p align="center">
+  <img src="assets/logo.png" width="96" height="96" alt="QWork OAuth logo">
+</p>
 
-[![Release](https://img.shields.io/github/v/release/wangxiaoshuai136/cpa-plugin-qwork-oauth)](https://github.com/wangxiaoshuai136/cpa-plugin-qwork-oauth/releases)
-[![License](https://img.shields.io/github/license/wangxiaoshuai136/cpa-plugin-qwork-oauth)](LICENSE)
+<h1 align="center">QWork OAuth</h1>
 
-把 **千问办公（QwenWork）** 接入 [CLIProxyAPI](https://github.com/router-for-me/CLIProxyAPI) 的原生插件（C ABI v1 / Schema v10）。
+<p align="center">
+  把 <b>千问办公（QwenWork）</b> 接入 <a href="https://github.com/router-for-me/CLIProxyAPI">CLIProxyAPI</a> 的原生插件
+</p>
 
-千问办公没有公开的模型 API，也没有可以长期保存的厂商 Key：它用 OAuth 登录，再按需换取 2 小时有效的 MaaS 临时票。本插件复现了这套链路，并把 14 个模型以 OpenAI 兼容的形式提供给 CPA。
+<p align="center">
+  <a href="https://github.com/wangxiaoshuai136/cpa-plugin-qwork-oauth/releases"><img src="https://img.shields.io/github/v/release/wangxiaoshuai136/cpa-plugin-qwork-oauth?label=release" alt="Release"></a>
+  <img src="https://img.shields.io/badge/platform-Windows%20amd64-0078d4" alt="Windows amd64">
+  <img src="https://img.shields.io/badge/CLIProxyAPI-plugin-4f46e5" alt="CLIProxyAPI plugin">
+  <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license">
+</p>
 
-> 作者：王小帅 · 许可：MIT · 平台：目前仅 Windows（本机登录态导入依赖 DPAPI）
+<p align="center">
+  <a href="CHANGELOG.md">更新日志</a> ·
+  <a href="docs/ARCHITECTURE.md">架构说明</a> ·
+  <a href="https://github.com/router-for-me/CLIProxyAPI-Plugins-Store/pull/405">插件库 PR</a>
+</p>
 
----
+千问办公没有公开的模型 API，也没有可以长期保存的厂商 Key：它用 OAuth 登录，再按需换取 2 小时有效的 MaaS 临时票。QWork OAuth 复现了这套链路，把 14 个模型以 OpenAI 兼容的形式接进 CPA，并提供额度查询和账号面板。
 
-## 功能
+> [!WARNING]
+> 本项目仅供学习与技术交流。请使用你自己有权使用的账号，遵守千问办公的服务条款。项目与阿里、通义千问无隶属关系，使用后果由使用者自行承担。
+
+## 特性
 
 | 能力 | 说明 |
-|---|---|
-| `model_provider` | 14 个千问办公原生模型，默认 `qwenwork/` 前缀，避免与内置渠道重名 |
+| --- | --- |
+| `model_provider` | 14 个原生模型，默认 `qwenwork/` 前缀，避免与内置渠道重名 |
 | `auth_provider` | OAuth 设备码登录（PKCE）+ 本机客户端登录态导入，支持多账号 |
-| `executor` | `chat-completions` 协议；SSE 流式、工具调用、图片输入 |
-| `quota_provider` | 套餐与额度查询；总额度使用官方用量百分比，月度/长期/每日显示余额 |
-| `management_api` | 插件卡片「千问办公」入口，内嵌账号、额度、模型面板 |
+| `executor` | `chat-completions`：SSE 流式、工具调用、图片输入 |
+| `quota_provider` | 套餐与额度：真实用量百分比 + 月度/长期/每日余额 |
+| `management_api` | 插件卡片「千问办公」入口，内置账号/额度/模型面板 |
 
-Response / Anthropic Messages 协议由 CPA 内核转换，插件只实现 `chat-completions`。
+Responses 与 Anthropic Messages 由 CPA 内核转换，插件只实现 `chat-completions`。
 
-## 原理
+## 工作原理
 
 ```
 CPA 请求
-  └─ 插件 executor
+  └─ executor
        ├─ 取凭据（OAuth 文件 / 本机客户端登录态）
-       ├─ POST /api/desktop-sessions   → 2 小时 sk-mm 票（缓存）
+       ├─ POST /api/desktop-sessions   → 2 小时 sk-mm 票（按 token 缓存）
        └─ POST {base_url}/v1/chat/completions
             └─ SSE 原样回传 → host.stream.emit
 ```
 
-千问办公的模型调用本身就是 OpenAI 兼容格式（`/v1/chat/completions`、`/v1/responses`、`/v1/messages` 都原生支持），插件只做鉴权、换票和转发。
+千问办公的模型接口本身就是 OpenAI 兼容格式（`/v1/chat/completions`、`/v1/responses`、`/v1/messages`），插件负责鉴权、换票与转发。
 
 ## 安装
 
@@ -50,29 +65,29 @@ plugins:
       enabled: true
 ```
 
-4. 重启核心，或在「插件」页停用再启用一次以热加载。
+4. 重启核心，或在「插件」页停用再启用一次热加载。
 
 ## 配置
 
 | 字段 | 默认 | 说明 |
-|---|---|---|
-| `auth_dir` | `%APPDATA%\QwenWorkCN` | 千问办公客户端登录态目录（含 `auth-v2.dat` 与 `Local State`） |
-| `model_prefix` | `qwenwork` | 模型名前缀；设为空字符串则使用原始 ID（可能被内置渠道去重） |
+| --- | --- | --- |
+| `auth_dir` | `%APPDATA%\QwenWorkCN` | 千问办公客户端登录态目录 |
+| `model_prefix` | `qwenwork` | 模型名前缀；留空则用原始 ID |
 | `base_url` | 空 | 覆盖换票返回的 MaaS 地址，一般不用填 |
-| `public_base_url` | `http://127.0.0.1:8317` | CPA 核心地址，仅用于生成插件图标 URL |
+| `public_base_url` | `http://127.0.0.1:8317` | CPA 核心地址，用于生成面板/图标链接 |
 
 ## 登录与授权
 
-### 方式一：从 CPA 登录（推荐，多账号）
+### 从 CPA 登录（推荐，多账号）
 
 1. 插件卡片 →「账号授权」→「添加账号」；
-2. 浏览器打开千问办公授权页并登录；
-3. 登录完成后浏览器会提示打开 `qwenwork-cn://`，**可以直接取消**，这不影响取票；
-4. CPA 会自动轮询并生成 `oauth/qwenwork-<uid>.json`。
+2. 浏览器打开授权页，选择账号完成登录；
+3. 浏览器最后会提示打开 `qwenwork-cn://`，**取消即可**，不影响取票；
+4. CPA 自动轮询并在 `oauth/` 生成 `qwenwork-<uid>.json`。
 
-每个账号一份凭证，可在「凭证文件」页停用或删除。
+浏览器由 CPA 按设置打开：默认浏览器 / 指定浏览器 / 不自动打开。每个账号一份凭证，可在「凭证文件」页停用或删除。
 
-### 方式二：导入本机客户端登录态
+### 导入本机客户端登录态
 
 本机已登录千问办公时，新建 `oauth/qwenwork-local.json`：
 
@@ -91,19 +106,36 @@ plugins:
 }
 ```
 
-插件每次请求读取客户端登录态（DPAPI 解密），不复制、不轮换 refresh token。客户端退出登录后该凭证失效。
+插件每次请求实时读取客户端登录态（DPAPI 解密），不复制文件、不轮换 refresh token。客户端退出登录后该凭证失效。
 
 ## 模型
 
-`qwenwork/flash`、`qwenwork/pro`、`qwenwork/qwen4-max`、`qwenwork/qwen3.8-max-preview`、`qwenwork/qwen3.8-flash`、`qwenwork/minimax-m3.1-flash`、`qwenwork/glm-5.4`、`qwenwork/ling-3.1-flash`、`qwenwork/deepseek-flash`、`qwenwork/deepseek-v4-pro`、`qwenwork/glm-5.3`、`qwenwork/glm-5.3-flash`、`qwenwork/kimi-k3.1-pro`、`qwenwork/step-5-preview`
-
-模型页会显示上下文长度、输入模态（text / image）与是否推理模型。
+| 模型 | 说明 |
+| --- | --- |
+| `qwenwork/flash` | 标准，极速全能，支持视觉 |
+| `qwenwork/pro` | 高级，性能均衡 |
+| `qwenwork/qwen4-max` | 旗舰，支持视觉 |
+| `qwenwork/qwen3.8-max-preview` | 全维旗舰 |
+| `qwenwork/qwen3.8-flash` | 轻量高频 |
+| `qwenwork/minimax-m3.1-flash` | 多模态办公 |
+| `qwenwork/glm-5.4` | 编程与多步骤 |
+| `qwenwork/ling-3.1-flash` | 长程推理 |
+| `qwenwork/deepseek-flash` | 视觉推理 |
+| `qwenwork/deepseek-v4-pro` | 深度推理 |
+| `qwenwork/glm-5.3` | 百万上下文 |
+| `qwenwork/glm-5.3-flash` | 轻量多模态 |
+| `qwenwork/kimi-k3.1-pro` | 长上下文 |
+| `qwenwork/step-5-preview` | 多模态 CLI |
 
 ## 额度
 
-- 总额度：`GET /api/v2/quota/usage` 的 `total_usage_percentage`，进度条为真实剩余比例；
-- 月度 / 长期 / 每日：来自 `/api/v1/adapter/user/wallets` 的余额；
+- **总额度**：`GET /api/v2/quota/usage` 的 `total_usage_percentage`，进度条为真实剩余比例；
+- **月度 / 长期 / 每日**：来自 `/api/v1/adapter/user/wallets` 的余额；
 - 个人免费版上游不提供月度/长期上限，因此这几项只显示余额，不伪造百分比。
+
+## 管理面板
+
+插件卡片上的「千问办公」按钮打开内嵌面板（`/v0/resource/plugins/qwenwork/panel`），展示当前账号、三档额度、钱包到期与 14 个模型。
 
 ## 构建
 
@@ -113,31 +145,22 @@ plugins:
 CGO_ENABLED=1 go build -buildmode=c-shared -trimpath -ldflags "-s -w" -o bin/qwenwork.dll ./cmd/qwenwork-plugin
 ```
 
-推送 `v*` 标签会触发 Release 工作流，自动产出
-`qwenwork_<version>_windows_amd64.zip` 与 `checksums.txt`。
+推送 `v*` 标签会触发 Release 工作流，产出 `qwenwork_<version>_windows_amd64.zip` 与 `checksums.txt`。
 
 ## 已知限制
 
 - 上游按模型限流 **4 次/分钟**（免费账号），批量调用需退避；
 - MaaS 票 2 小时过期，插件自动换票；401/403 自动重试一次；
 - 本机导入模式依赖客户端保持登录；
-- 仅 Windows 构建：OAuth 模式本身跨平台，但当前代码的 DPAPI 部分尚未拆分；
+- 当前仅提供 Windows 构建（本机导入依赖 DPAPI；OAuth 模式本身跨平台）；
 - 非官方接口，服务端改版可能导致失效。
 
 ## 安全
 
 - 插件只读取本机登录态，不上传凭据；
 - 凭证保存在 CPA 的 `oauth/` 目录，与其他 provider 一致；
-- 调用方仍是本机 CPA，请勿把 8317 暴露到公网。
-
-## 文档
-
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)：插件 ABI、鉴权与请求流程、额度口径
-- [CHANGELOG.md](CHANGELOG.md)：版本记录
+- 请勿把 CPA 的 8317 端口暴露到公网。
 
 ## 许可
 
 MIT © 2026 王小帅
-
-
-
