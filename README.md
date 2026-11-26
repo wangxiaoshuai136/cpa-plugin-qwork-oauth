@@ -1,4 +1,4 @@
-# cpa-plugin-qwenwork
+# QWork OAuth (cpa-plugin-qwenwork)
 
 [![Release](https://img.shields.io/github/v/release/wangxiaoshuai136/cpa-plugin-qwenwork)](https://github.com/wangxiaoshuai136/cpa-plugin-qwenwork/releases)
 [![License](https://img.shields.io/github/license/wangxiaoshuai136/cpa-plugin-qwenwork)](LICENSE)
@@ -138,3 +138,4 @@ CGO_ENABLED=1 go build -buildmode=c-shared -trimpath -ldflags "-s -w" -o bin/qwe
 ## 许可
 
 MIT © 2026 王小帅
+
