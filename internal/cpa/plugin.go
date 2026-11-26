@@ -156,7 +156,7 @@ func (p *Plugin) handleRegister(raw []byte) (any, error) {
 	return rpcRegistration{
 		SchemaVersion: pluginabi.SchemaVersion,
 		Metadata: pluginapi.Metadata{
-			Name:             "QWork OAuth",
+			Name:             "QWork",
 			Version:          Version,
 			Author:           "王小帅",
 			GitHubRepository: "https://github.com/wangxiaoshuai136/cpa-plugin-qwork-oauth",
@@ -184,6 +184,7 @@ func (p *Plugin) handleModelStatic(raw []byte) (any, error) {
 	prefix := strings.Trim(strings.TrimSpace(p.Config().ModelPrefix), "/")
 	return pluginapi.ModelResponse{Provider: ProviderID, Models: StaticModels(prefix)}, nil
 }
+
 
 
 
