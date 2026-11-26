@@ -1,7 +1,7 @@
 # QWork OAuth (cpa-plugin-qwenwork)
 
-[![Release](https://img.shields.io/github/v/release/wangxiaoshuai136/cpa-plugin-qwenwork)](https://github.com/wangxiaoshuai136/cpa-plugin-qwenwork/releases)
-[![License](https://img.shields.io/github/license/wangxiaoshuai136/cpa-plugin-qwenwork)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/wangxiaoshuai136/cpa-plugin-qwork-oauth)](https://github.com/wangxiaoshuai136/cpa-plugin-qwork-oauth/releases)
+[![License](https://img.shields.io/github/license/wangxiaoshuai136/cpa-plugin-qwork-oauth)](LICENSE)
 
 把 **千问办公（QwenWork）** 接入 [CLIProxyAPI](https://github.com/router-for-me/CLIProxyAPI) 的原生插件（C ABI v1 / Schema v10）。
 
@@ -38,7 +38,7 @@ CPA 请求
 
 ## 安装
 
-1. 从 [Releases](https://github.com/wangxiaoshuai136/cpa-plugin-qwenwork/releases) 下载 `qwenwork_<版本>_windows_amd64.zip`，解压得到 `qwenwork.dll`；
+1. 从 [Releases](https://github.com/wangxiaoshuai136/cpa-plugin-qwork-oauth/releases) 下载 `qwenwork_<版本>_windows_amd64.zip`，解压得到 `qwenwork.dll`；
 2. 放到 `<CPA 数据目录>/plugins/windows/amd64/qwenwork-v<版本>.dll`；
 3. 在 `config.yaml` 启用：
 
@@ -138,4 +138,5 @@ CGO_ENABLED=1 go build -buildmode=c-shared -trimpath -ldflags "-s -w" -o bin/qwe
 ## 许可
 
 MIT © 2026 王小帅
+
 
