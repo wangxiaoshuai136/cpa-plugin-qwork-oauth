@@ -1,3 +1,9 @@
+## 0.1.2 - 2026-11-27
+
+### 优化
+
+- 图标改用官网 SVG 矢量源重新栅格化，输出 128×128 与 512×512 圆角图标
+- README 增加高清 logo、徽章与完整使用说明
 ## 0.1.1 - 2026-11-27
 
 ### 修复
@@ -25,4 +31,5 @@
 - 流式返回改为 `host.stream.emit`，修复 `unsupported type: <-chan` 500
 - 凭证强制 `.json` 文件名，修复重复卡片与删除 404
 - 上游固定 `Accept-Encoding: identity`，修复 gzip 头错配导致的 `terminated`
+
 
