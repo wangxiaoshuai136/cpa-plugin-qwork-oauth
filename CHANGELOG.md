@@ -1,3 +1,9 @@
+## 0.1.3 - 2026-11-27
+
+### 修复
+
+- `auth.parse` / `auth.refresh` 回传 `note`，凭证卡片上的账号备注现在会正确保存并显示
+- 凭证文件结构保留 `note` 字段，刷新时不再丢失
 ## 0.1.2 - 2026-11-27
 
 ### 优化
@@ -31,5 +37,6 @@
 - 流式返回改为 `host.stream.emit`，修复 `unsupported type: <-chan` 500
 - 凭证强制 `.json` 文件名，修复重复卡片与删除 404
 - 上游固定 `Accept-Encoding: identity`，修复 gzip 头错配导致的 `terminated`
+
 
 

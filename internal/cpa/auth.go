@@ -240,7 +240,7 @@ func (p *Plugin) handleAuthParse(raw []byte) (any, error) {
 		Label:            label,
 		Prefix:           "",
 		StorageJSON:      req.RawJSON,
-		Metadata:         map[string]any{"uid": doc.UID, "auth_dir": doc.AuthDir, "auth_kind": doc.AuthKind},
+		Metadata:         map[string]any{"uid": doc.UID, "auth_dir": doc.AuthDir, "auth_kind": doc.AuthKind, "note": doc.Note},
 		Attributes:       map[string]string{"auth_provider": ProviderID},
 		NextRefreshAfter: nextRefresh(doc.ExpiresAt),
 	}
@@ -257,7 +257,7 @@ func (p *Plugin) handleAuthRefresh(raw []byte) (any, error) {
 	if doc.AuthKind != "oauth" || doc.RefreshToken == "" {
 		doc.UpdatedAt = time.Now().Format(time.RFC3339)
 		rawStorage, _ := json.Marshal(doc)
-		auth := pluginapi.AuthData{Provider: ProviderID, ID: req.AuthID, Label: firstNonEmpty(doc.Label, "千问办公"), StorageJSON: rawStorage, Attributes: map[string]string{"auth_provider": ProviderID}, NextRefreshAfter: time.Now().Add(24 * time.Hour)}
+		auth := pluginapi.AuthData{Provider: ProviderID, ID: req.AuthID, Label: firstNonEmpty(doc.Label, "千问办公"), StorageJSON: rawStorage, Metadata: map[string]any{"note": doc.Note}, Attributes: map[string]string{"auth_provider": ProviderID}, NextRefreshAfter: time.Now().Add(24 * time.Hour)}
 		return pluginapi.AuthRefreshResponse{Auth: auth, NextRefreshAfter: time.Now().Add(24 * time.Hour)}, nil
 	}
 
@@ -306,7 +306,7 @@ func (p *Plugin) handleAuthRefresh(raw []byte) (any, error) {
 	doc.UpdatedAt = time.Now().Format(time.RFC3339)
 	rawStorage, _ := json.Marshal(doc)
 	next := nextRefresh(doc.ExpiresAt)
-	auth := pluginapi.AuthData{Provider: ProviderID, ID: req.AuthID, Label: firstNonEmpty(doc.Label, "千问办公"), StorageJSON: rawStorage, Attributes: map[string]string{"auth_provider": ProviderID}, NextRefreshAfter: next}
+	auth := pluginapi.AuthData{Provider: ProviderID, ID: req.AuthID, Label: firstNonEmpty(doc.Label, "千问办公"), StorageJSON: rawStorage, Metadata: map[string]any{"note": doc.Note}, Attributes: map[string]string{"auth_provider": ProviderID}, NextRefreshAfter: next}
 	return pluginapi.AuthRefreshResponse{Auth: auth, NextRefreshAfter: next}, nil
 }
 
@@ -369,6 +369,7 @@ func firstNonEmpty(vals ...string) string {
 	}
 	return ""
 }
+
 
 
 

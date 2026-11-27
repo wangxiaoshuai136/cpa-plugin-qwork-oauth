@@ -148,6 +148,7 @@ type credentialFile struct {
 	Name             string `json:"name"`
 	DisplayName      string `json:"display_name"`
 	KeySource        string `json:"key_source"`
+	Note             string `json:"note"`
 	AuthDir          string `json:"auth_dir"`
 	Origin           string `json:"origin"`
 }
@@ -281,4 +282,5 @@ func clientHeaders() map[string]string {
 		"X-QwenWork-Arch":            "x64",
 	}
 }
+
 
