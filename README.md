@@ -34,6 +34,7 @@
 | `auth_provider` | OAuth 设备码登录（PKCE）+ 本机客户端登录态导入，支持多账号 |
 | `executor` | `chat-completions`：SSE 流式、工具调用、图片输入 |
 | `quota_provider` | 套餐与额度：真实用量百分比 + 月度/长期/每日余额 |
+| `management_api` | 静态面板页 + 鉴权数据接口 `/v0/management/qwenwork/api/state` |
 
 Responses 与 Anthropic Messages 由 CPA 内核转换，插件只实现 `chat-completions`。
 
@@ -132,9 +133,9 @@ plugins:
 - **月度 / 长期 / 每日**：来自 `/api/v1/adapter/user/wallets` 的余额；
 - 个人免费版上游不提供月度/长期上限，因此这几项只显示余额，不伪造百分比。
 
-## 额度展示
+## 管理面板
 
-额度直接显示在「凭证文件」的账号卡片上；插件不再注册动态 resource 页面（`/v0/resource/plugins/` 仅提供静态图标）。
+插件卡片上的「千问办公」按钮打开静态面板页（`/v0/resource/plugins/qwenwork/panel`）。页面本身不含任何数据，所有账号/额度信息通过 `/v0/management/qwenwork/api/state` 读取，需要 CPA 管理密钥；页面会复用同源已保存的 `cli-proxy-auth`/`managementKey`，也可以在页面上手动填写。
 
 ## 构建
 
@@ -163,4 +164,5 @@ CGO_ENABLED=1 go build -buildmode=c-shared -trimpath -ldflags "-s -w" -o bin/qwe
 ## 许可
 
 MIT © 2026 王小帅
+
 

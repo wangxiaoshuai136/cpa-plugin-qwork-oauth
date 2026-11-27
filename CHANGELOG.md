@@ -1,3 +1,9 @@
+## 0.2.1 - 2026-11-27
+
+### 修复
+
+- 按审计要求恢复面板：`/v0/resource/plugins/` 只提供静态 HTML 与图标，账号/额度数据改由鉴权接口 `/v0/management/qwenwork/api/state` 提供
+- 面板页面复用同源管理密钥（`cli-proxy-auth` / `managementKey`），未登录时提示手动输入
 ## 0.2.0 - 2026-11-27
 
 ### 变更
@@ -45,6 +51,7 @@
 - 流式返回改为 `host.stream.emit`，修复 `unsupported type: <-chan` 500
 - 凭证强制 `.json` 文件名，修复重复卡片与删除 404
 - 上游固定 `Accept-Encoding: identity`，修复 gzip 头错配导致的 `terminated`
+
 
 
 
