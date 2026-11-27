@@ -1,3 +1,11 @@
+## 0.2.0 - 2026-11-27
+
+### 变更
+
+- 发布全平台产物：macOS / Linux / Windows 的 amd64 与 arm64
+- 本机登录态导入仅在 Windows 可用，其他平台使用 OAuth 登录
+- 移除 `/v0/resource/plugins/` 下的动态面板，只保留静态图标；额度仍在凭证卡片展示
+- 版本升到 0.2.0，满足插件库审计要求
 ## 0.1.3 - 2026-11-27
 
 ### 修复
@@ -37,6 +45,7 @@
 - 流式返回改为 `host.stream.emit`，修复 `unsupported type: <-chan` 500
 - 凭证强制 `.json` 文件名，修复重复卡片与删除 404
 - 上游固定 `Accept-Encoding: identity`，修复 gzip 头错配导致的 `terminated`
+
 
 
 

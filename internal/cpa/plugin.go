@@ -13,7 +13,7 @@ import (
 
 const (
 	ProviderID = "qwenwork"
-	Version    = "0.1.3"
+	Version    = "0.2.0"
 )
 
 type HostCallFunc func(method string, payload []byte) ([]byte, error)
@@ -185,6 +185,7 @@ func (p *Plugin) handleModelStatic(raw []byte) (any, error) {
 	prefix := strings.Trim(strings.TrimSpace(p.Config().ModelPrefix), "/")
 	return pluginapi.ModelResponse{Provider: ProviderID, Models: StaticModels(prefix)}, nil
 }
+
 
 
 

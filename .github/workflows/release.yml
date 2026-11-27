@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Release tag (e.g. v0.1.0)"
+        description: "Release tag (e.g. v0.2.0)"
         required: true
-        default: "v0.1.0"
+        default: "v0.2.0"
 
 permissions:
   contents: write
@@ -19,39 +19,81 @@ env:
 
 jobs:
   build:
-    name: Build (windows/amd64)
-    runs-on: ubuntu-24.04
+    name: Build (${{ matrix.goos }}/${{ matrix.goarch }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { goos: darwin, goarch: amd64, os: macos-latest, ext: .dylib }
+          - { goos: darwin, goarch: arm64, os: macos-latest, ext: .dylib }
+          - { goos: linux, goarch: amd64, os: ubuntu-24.04, ext: .so }
+          - { goos: linux, goarch: arm64, os: ubuntu-24.04, ext: .so }
+          - { goos: windows, goarch: amd64, os: ubuntu-24.04, ext: .dll }
+          - { goos: windows, goarch: arm64, os: ubuntu-24.04, ext: .dll }
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
           check-latest: true
-      - name: Install Toolchain
-        run: sudo apt-get update && sudo apt-get install -y gcc-mingw-w64-x86-64 zip
-      - name: Determine Version
+
+      - name: Install Linux toolchains
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu gcc-mingw-w64-x86-64 zip xz-utils
+
+      - name: Install llvm-mingw for windows/arm64
+        if: matrix.goos == 'windows' && matrix.goarch == 'arm64'
+        run: |
+          curl -fsSL -o /tmp/llvm-mingw.tar.xz \
+            https://github.com/mstorsjo/llvm-mingw/releases/download/20261117/llvm-mingw-20261117-ucrt-ubuntu-22.04-x86_64.tar.xz
+          mkdir -p /opt/llvm-mingw
+          tar -xJf /tmp/llvm-mingw.tar.xz -C /opt/llvm-mingw --strip-components=1
+          echo "/opt/llvm-mingw/bin" >> "$GITHUB_PATH"
+
+      - name: Determine version
         id: ver
         shell: bash
         run: |
           RAW_TAG="${{ github.event.inputs.tag || github.ref_name }}"
           echo "tag=${RAW_TAG}" >> "$GITHUB_OUTPUT"
           echo "version=${RAW_TAG#v}" >> "$GITHUB_OUTPUT"
-      - name: Test
+
+      - name: Test native targets
+        if: (matrix.goos == 'darwin' && matrix.goarch == 'arm64') || (matrix.goos == 'linux' && matrix.goarch == 'amd64')
         run: go test ./...
-      - name: Build & Package
+
+      - name: Build dynamic library & package zip
         shell: bash
         run: |
+          set -euo pipefail
           mkdir -p out
-          LIB_NAME="${PLUGIN_ID}.dll"
-          ZIP_NAME="${PLUGIN_ID}_${{ steps.ver.outputs.version }}_windows_amd64.zip"
-          CGO_ENABLED=1 GOOS=windows GOARCH=amd64 CC=x86_64-w64-mingw32-gcc \
-            go build -buildmode=c-shared -trimpath -ldflags="-s -w" -o "out/${LIB_NAME}" ./cmd/qwenwork-plugin
+          LIB_NAME="${PLUGIN_ID}${{ matrix.ext }}"
+          ZIP_NAME="${PLUGIN_ID}_${{ steps.ver.outputs.version }}_${{ matrix.goos }}_${{ matrix.goarch }}.zip"
+          export CGO_ENABLED=1 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }}
+          if [ "${{ matrix.goos }}" = "darwin" ]; then
+            export MACOSX_DEPLOYMENT_TARGET="13.0"
+            ARCH=${{ matrix.goarch == 'amd64' && 'x86_64' || 'arm64' }}
+            export CGO_CFLAGS="-O2 -mmacosx-version-min=13.0 -arch ${ARCH}"
+            export CGO_LDFLAGS="-mmacosx-version-min=13.0 -arch ${ARCH}"
+          elif [ "${{ matrix.goos }}" = "linux" ] && [ "${{ matrix.goarch }}" = "arm64" ]; then
+            export CC="aarch64-linux-gnu-gcc"
+          elif [ "${{ matrix.goos }}" = "windows" ] && [ "${{ matrix.goarch }}" = "amd64" ]; then
+            export CC="x86_64-w64-mingw32-gcc"
+          elif [ "${{ matrix.goos }}" = "windows" ] && [ "${{ matrix.goarch }}" = "arm64" ]; then
+            export CC="aarch64-w64-mingw32-gcc"
+          fi
+          go build -buildmode=c-shared -trimpath -ldflags="-s -w" -o "out/${LIB_NAME}" ./cmd/qwenwork-plugin
           (cd out && zip -j "../${ZIP_NAME}" "${LIB_NAME}")
-      - name: Upload Artifact
+          rm -f out/*.h
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: plugin-windows-amd64
-          path: "${PLUGIN_ID}_*_windows_amd64.zip"
+          name: plugin-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: "qwenwork_*_${{ matrix.goos }}_${{ matrix.goarch }}.zip"
 
   release:
     name: Publish GitHub Release
@@ -62,11 +104,14 @@ jobs:
         with:
           path: artifacts
           merge-multiple: true
-      - name: Checksums & Release
+      - name: Checksums & release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd artifacts
           sha256sum *.zip > checksums.txt
           TAG="${{ github.event.inputs.tag || github.ref_name }}"
-          gh release create "$TAG" *.zip checksums.txt --title "$TAG - QwenWork Plugin" --notes "QwenWork (千问办公) native CLIProxyAPI plugin release." -R "${{ github.repository }}"
+          gh release create "$TAG" *.zip checksums.txt \
+            --title "$TAG - QWork OAuth" \
+            --notes "QWork (千问办公) native CLIProxyAPI plugin release." \
+            -R "${{ github.repository }}"

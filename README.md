@@ -10,7 +10,7 @@
 
 <p align="center">
   <a href="https://github.com/wangxiaoshuai136/cpa-plugin-qwork-oauth/releases"><img src="https://img.shields.io/github/v/release/wangxiaoshuai136/cpa-plugin-qwork-oauth?label=release" alt="Release"></a>
-  <img src="https://img.shields.io/badge/platform-Windows%20amd64-0078d4" alt="Windows amd64">
+  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-0078d4" alt="macOS, Linux, Windows">
   <img src="https://img.shields.io/badge/CLIProxyAPI-plugin-4f46e5" alt="CLIProxyAPI plugin">
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license">
 </p>
@@ -34,7 +34,6 @@
 | `auth_provider` | OAuth 设备码登录（PKCE）+ 本机客户端登录态导入，支持多账号 |
 | `executor` | `chat-completions`：SSE 流式、工具调用、图片输入 |
 | `quota_provider` | 套餐与额度：真实用量百分比 + 月度/长期/每日余额 |
-| `management_api` | 插件卡片「千问办公」入口，内置账号/额度/模型面板 |
 
 Responses 与 Anthropic Messages 由 CPA 内核转换，插件只实现 `chat-completions`。
 
@@ -133,9 +132,9 @@ plugins:
 - **月度 / 长期 / 每日**：来自 `/api/v1/adapter/user/wallets` 的余额；
 - 个人免费版上游不提供月度/长期上限，因此这几项只显示余额，不伪造百分比。
 
-## 管理面板
+## 额度展示
 
-插件卡片上的「千问办公」按钮打开内嵌面板（`/v0/resource/plugins/qwenwork/panel`），展示当前账号、三档额度、钱包到期与 14 个模型。
+额度直接显示在「凭证文件」的账号卡片上；插件不再注册动态 resource 页面（`/v0/resource/plugins/` 仅提供静态图标）。
 
 ## 构建
 
@@ -151,8 +150,8 @@ CGO_ENABLED=1 go build -buildmode=c-shared -trimpath -ldflags "-s -w" -o bin/qwe
 
 - 上游按模型限流 **4 次/分钟**（免费账号），批量调用需退避；
 - MaaS 票 2 小时过期，插件自动换票；401/403 自动重试一次；
-- 本机导入模式依赖客户端保持登录；
-- 当前仅提供 Windows 构建（本机导入依赖 DPAPI；OAuth 模式本身跨平台）；
+- 本机导入模式仅 Windows（DPAPI），其他平台请使用 OAuth 登录；
+- 发布产物覆盖 macOS（amd64/arm64）、Linux（amd64/arm64）、Windows（amd64/arm64）；
 - 非官方接口，服务端改版可能导致失效。
 
 ## 安全
@@ -164,3 +163,4 @@ CGO_ENABLED=1 go build -buildmode=c-shared -trimpath -ldflags "-s -w" -o bin/qwe
 ## 许可
 
 MIT © 2026 王小帅
+
